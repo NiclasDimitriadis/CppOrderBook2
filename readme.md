@@ -30,12 +30,7 @@ Special emphasis was put on techniques enabling low-latency. Those include:
  
 ---
 
-#### performance:
-###### cachegring:	
- - the result of a cachegrind run can be found in the `misc` directory
- - results indicate negligible rates of cache misses and branch mispredictions with the possible exception of indirection braches
-
-###### empirical latencies:
+### empirical latencies:
  - generated on Intel Core i5-12450H
  - to achieve maximum performance, hyperthreading was deactivated and threads were pinned to isolated performance cores
  - findings: 
