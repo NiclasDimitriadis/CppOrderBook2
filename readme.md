@@ -2,7 +2,7 @@
  - compilation requires C++23 support (provided makefiles use g++-13)
  - all tests of CppOrderBook have been performed on x86-64 hardware
  - CppOrderBook uses components of the TMP_lib repo, specifically the `param_pack::type_pack_t` class template and the type checking logic contained in namespace `type_pack_check`
- - the multithreaded implementation for performance measuring also uses the SeqLockQueue repo
+ - the multithreaded implementation for performance measuring uses the SeqLockQueue repo
 ---
 
 #### project description:
