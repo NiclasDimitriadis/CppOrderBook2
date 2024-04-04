@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -39,10 +40,11 @@ template <typename MsgClassPack, typename EntryType_,
 struct OrderBook {
 private:
   // static members and member types
-  static constexpr size_t alignment = Auxil::cache_optimal_alignment<
+  static constexpr size_t bucket_alignment = Auxil::cache_optimal_alignment<
       OrderBookBucket::OrderBookBucket<0, EntryType_>>(64,
                                                        exclusive_cacheline_);
-  using BucketType = OrderBookBucket::OrderBookBucket<alignment, EntryType_>;
+  static constexpr size_t memory_alignment = std::max((const size_t) 64, bucket_alignment);
+  using BucketType = OrderBookBucket::OrderBookBucket<bucket_alignment, EntryType_>;
   using MsgClassVariant_ = param_pack::generate_type_pack_t<
       MsgClassPack>::template specialize_template_t<std::variant>;
   using OrderClassTuple = param_pack::generate_type_pack_t<
@@ -62,9 +64,10 @@ private:
   const std::span<std::optional<std::uint32_t>, 4> stats_span;
   alignas(64) std::atomic_flag modify_lock = false;
   std::atomic<std::int64_t> version_counter = 0;
-  // points to memory location of the actual orderbook entries
-  void *const memory_pointer;
-  const std::span<BucketType> mem_span;
+  // owns memory of the actual orderbook entries
+  const std::unique_ptr<BucketType[]> memory_pointer;
+  // used to access memory held by memory_pointer
+  const std::span<BucketType, book_length_> mem_span;
   // index sequence to specialize member function templates below on number of
   // differenct messages
   static constexpr auto n_msg_types_seq =
@@ -85,11 +88,10 @@ public:
   using EntryType = EntryType_;
   using MsgClassVariant = MsgClassVariant_;
   static constexpr std::uint32_t book_length = book_length_;
-  static constexpr std::uint32_t byte_length = book_length * alignment;
 
   // 5 special members
   explicit OrderBook(std::uint32_t);
-  ~OrderBook();
+  ~OrderBook() = default;
   OrderBook(const OrderBook &) = delete;
   OrderBook &operator=(const OrderBook &) = delete;
   OrderBook(OrderBook &&) = delete;
@@ -128,26 +130,15 @@ public:
 
 ORDER_BOOK_TEMPLATE_DECLARATION
 ORDER_BOOK::OrderBook(std::uint32_t base_price_)
-    : memory_pointer{std::aligned_alloc(alignment, byte_length)},
-      mem_span{std::span<BucketType>{
-          reinterpret_cast<BucketType *>(this->memory_pointer), book_length}},
-      stats_span{stats_array}, base_price{base_price_} {
-  // initialize all bucket objects
-  std::ranges::fill(this->mem_span, BucketType());
-};
-
-ORDER_BOOK_TEMPLATE_DECLARATION
-ORDER_BOOK::~OrderBook() {
-  // free allocated memory (RAII)
-  std::free(this->memory_pointer);
-};
+    : memory_pointer{new(std::align_val_t{memory_alignment}) BucketType[book_length_]()},
+      mem_span{this->memory_pointer.get(), book_length_},
+      stats_span{stats_array}, base_price{base_price_} {};
 
 ORDER_BOOK_TEMPLATE_DECLARATION
 template <size_t... Is>
 typename ORDER_BOOK::OrderClassTuple
 ORDER_BOOK::make_tuple_from_variant(const MsgClassVariant_ &msg_var,
                                     std::index_sequence<Is...>) const noexcept {
-  // same type as OrderBook::OrderClassTuple
   OrderClassTuple ret;
   (
       [&]() {
