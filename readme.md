@@ -256,5 +256,5 @@ the components listed below have the sole purpose of enabling unit testing and/o
     -  to avoid branches, dummy instances of all the message types other than the one contained in `order` are constructed and all handling methods are called
 - `std::uint64_t __invariants_check(int n_it)`: intended for debugging purposes,
  checks invariants layed out above aren't violated, prints an error message containing
- argument nIt (most likely an iteration index) for any violation and returns a sum of error codes
+ argument `n_it` (most likely an iteration index) for any violation and returns a sum of error codes
  of all violations
