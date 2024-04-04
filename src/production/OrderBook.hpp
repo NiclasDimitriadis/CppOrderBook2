@@ -66,7 +66,7 @@ private:
   std::atomic<std::int64_t> version_counter = 0;
   // owns memory of the actual orderbook entries
   const std::unique_ptr<BucketType[]> memory_pointer;
-  // used to access memory held by memory_pointer
+  // std::span used to access memory held by memory_pointer
   const std::span<BucketType, book_length_> mem_span;
   // index sequence to specialize member function templates below on number of
   // differenct messages
