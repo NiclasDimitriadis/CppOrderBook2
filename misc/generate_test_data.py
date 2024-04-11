@@ -4,7 +4,7 @@ import pandas as pd
 
 #generate random walk for price simulation
 #repeat if negative prices are generated
-n = 1001000
+n = 1000000
 rand_walk = np.zeros(n) 
 while(rand_walk.min() < 10):
     rand_walk = np.random.randint(low=-1, high=2, size=n)

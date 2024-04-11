@@ -22,7 +22,7 @@ using line_tuple = std::tuple<std::uint8_t, std::int32_t, std::uint32_t>;
 using MsgClassVar =
     std::variant<FIXMsgClasses::AddLimitOrder,
                  FIXMsgClasses::WithdrawLimitOrder, FIXMsgClasses::MarketOrder>;
-static constexpr std::uint32_t two_pow_20 = 1048576;
+//static constexpr std::uint32_t two_pow_20 = 1048576;
 using OrderBookClass =
     OrderBook::OrderBook<MsgClassVar, std::int64_t, 6000, false>;
 using SockHandler =

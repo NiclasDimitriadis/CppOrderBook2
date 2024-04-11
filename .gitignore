@@ -2,4 +2,3 @@ dump
 *~
 *.sh
 **/build/**
-*.csv

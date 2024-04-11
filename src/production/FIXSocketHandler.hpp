@@ -107,9 +107,8 @@ SOCK_HANDLER::read_next_message() noexcept {
 
   // verifiy that header is valid by checking whether delimeter sequence is in
   // expected place
-  const std::uint16_t delimit_val_local = delimit_value;
   const auto delimit_span = std::span<const std::uint8_t, 2>{
-      reinterpret_cast<const std::uint8_t *>(&delimit_val_local), 2};
+      reinterpret_cast<const std::uint8_t *>(&delimit_value), 2};
 
   // determine if bytes read are a valid header, find valid header if they are
   // not

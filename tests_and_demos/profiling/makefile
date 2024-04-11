@@ -1,7 +1,7 @@
 CXX = g++-13
 COMPILER_FLAGS = -std=c++23 -O3 -g -march=native -mtune=native
 INCLUDE_DIRS = -I ../../src/production -I ../../src/testing                                       -I ../../dependencies/TMP_lib/src/production -I ../../dependencies/SeqLockQueue/src/production
-UNITS = Record_latencies_single_threaded Record_latencies_multithreaded Profiling_single_threaded
+UNITS = Record_latencies_single_threaded Record_latencies_multithreaded Record_latencies_repeat_same_msg Profiling_single_threaded
 EXECUTABLES = $(addprefix build/,$(UNITS))
 OBJ_FILES = $(addsuffix .o,$(EXECUTABLES))
 
