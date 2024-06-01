@@ -19,35 +19,35 @@ TEST_CASE("testing FIXSocketHandler::FIXSocketHandler") {
   CHECK(recv_res.has_value());
   MsgClassVariant recv_content = recv_res.value();
   CHECK(recv_content.index() == 0);
-  CHECK(std::get<0>(recv_content).order_volume == -11);
-  CHECK(std::get<0>(recv_content).order_price == 111);
+  CHECK(std::get<0>(recv_content).get_order_volume() == -11);
+  CHECK(std::get<0>(recv_content).get_order_price() == 111);
 
   recv_res = sock_handler.read_next_message();
   CHECK(recv_res.has_value());
   recv_content = recv_res.value();
   CHECK(recv_content.index() == 1);
-  CHECK(std::get<1>(recv_content).order_volume == 22);
-  CHECK(std::get<1>(recv_content).order_price == 222);
+  CHECK(std::get<1>(recv_content).get_order_volume() == 22);
+  CHECK(std::get<1>(recv_content).get_order_price() == 222);
 
   recv_res = sock_handler.read_next_message();
   CHECK(recv_res.has_value());
   recv_content = recv_res.value();
   CHECK(recv_content.index() == 2);
-  CHECK(std::get<2>(recv_content).order_volume == 33);
+  CHECK(std::get<2>(recv_content).get_order_volume() == 33);
 
   recv_res = sock_handler.read_next_message();
   CHECK(recv_res.has_value());
   recv_content = recv_res.value();
   CHECK(recv_content.index() == 0);
-  CHECK(std::get<0>(recv_content).order_volume == 1000);
-  CHECK(std::get<0>(recv_content).order_price == 20);
+  CHECK(std::get<0>(recv_content).get_order_volume() == 1000);
+  CHECK(std::get<0>(recv_content).get_order_price() == 20);
 
   recv_res = sock_handler.read_next_message();
   CHECK(recv_res.has_value());
   recv_content = recv_res.value();
   CHECK(recv_content.index() == 1);
-  CHECK(std::get<1>(recv_content).order_volume == -2000);
-  CHECK(std::get<1>(recv_content).order_price == 50);
+  CHECK(std::get<1>(recv_content).get_order_volume() == -2000);
+  CHECK(std::get<1>(recv_content).get_order_price() == 50);
 
   recv_res = sock_handler.read_next_message();
   CHECK(!recv_res.has_value());
@@ -56,7 +56,7 @@ TEST_CASE("testing FIXSocketHandler::FIXSocketHandler") {
   CHECK(recv_res.has_value());
   recv_content = recv_res.value();
   CHECK(recv_content.index() == 2);
-  CHECK(std::get<2>(recv_content).order_volume == 3000);
+  CHECK(std::get<2>(recv_content).get_order_volume() == 3000);
 }
 
 int main() {

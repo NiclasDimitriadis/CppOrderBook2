@@ -10,19 +10,19 @@ concept constexpr_bool_value = requires() {
 };
 
 template<typename T1, typename T2>
-requires constexpr_bool_value<T1> && helpers::constexpr_bool_value<T2>
+requires constexpr_bool_value<T1> && constexpr_bool_value<T2>
 struct And{
   static constexpr bool value = T1::value && T2::value;
 };
 
 template<typename T1, typename T2>
-requires constexpr_bool_value<T1> && helpers::constexpr_bool_value<T2>
+requires constexpr_bool_value<T1> && constexpr_bool_value<T2>
 struct Or{
   static constexpr bool value = T1::value || T2::value;
 };
 
 template<typename T1, typename T2>
-requires constexpr_bool_value<T1> && helpers::constexpr_bool_value<T2>
+requires constexpr_bool_value<T1> && constexpr_bool_value<T2>
 struct Xor{
   static constexpr bool value = T1::value != T2::value;
 };

@@ -30,7 +30,6 @@ using OrderBookClass =
 using SockHandler =
     FIXSocketHandler::FIXSocketHandler<MsgClassVar,
                                        FIXMockSocket::FIXMockSocket>;
-using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 int main(int argc, char* argv[]) {
   // process and validate command line arguments
@@ -79,7 +78,6 @@ int main(int argc, char* argv[]) {
             .count());
     latencies[i] = latency;
 
-    BusyWait::busy_wait(200);
   }
 
   // use current time as seed for random generator, generate random index

@@ -69,11 +69,10 @@ void enqueue_logic(SeqLockQueue *queue_ptr, const std::string &csv_path,
 
   // read all messages for socket and enqueue them to be processed by other
   // thread
-  int index{0};
-  TimePoint start_time;
+  size_t index{0};
 
   while (!end_of_buffer_flag->test(std::memory_order_acquire)) {
-    start_time = std::chrono::high_resolution_clock::now();
+    const TimePoint start_time = std::chrono::high_resolution_clock::now();
     read_ret = s_handler.read_next_message();
     queue_ptr->enqueue(read_ret.value());
     (*start_times)[index] = start_time;
@@ -136,14 +135,13 @@ int main(int argc, char *argv[]) {
   };
   int index{0};
   signal_flag.clear();
-  TimePoint completion_time;
 
   // dequeue messages and insert them into order book
   do {
     deq_ret = reader.read_next_entry();
     if (deq_ret.has_value()) {
       book.process_order(deq_ret.value());
-      completion_time = std::chrono::high_resolution_clock::now();
+      const TimePoint completion_time = std::chrono::high_resolution_clock::now();
       completion_times[index] = completion_time;
       ++index;
     };

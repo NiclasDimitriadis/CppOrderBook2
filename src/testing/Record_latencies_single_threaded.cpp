@@ -30,7 +30,7 @@ using OrderBookClass =
 using SockHandler =
     FIXSocketHandler::FIXSocketHandler<MsgClassVar,
                                        FIXMockSocket::FIXMockSocket>;
-using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
 
 int main(int argc, char* argv[]) {
   // process and validate command line arguments
@@ -61,38 +61,34 @@ int main(int argc, char* argv[]) {
   auto mock_sock = FIXMockSocket::FIXMockSocket(tuple_vec, nullptr);
   auto s_handler = SockHandler(&mock_sock);
   auto book = OrderBookClass(7000);
-  const int n_msgs = tuple_vec.size();
-  auto start_time = std::chrono::high_resolution_clock::now();
-  auto read_done_time = std::chrono::high_resolution_clock::now();
-  auto completion_time = std::chrono::high_resolution_clock::now();
+  const size_t n_msgs = tuple_vec.size();
   std::optional<MsgClassVar> read_ret;
 
-  double read_time, proc_time, latency;
 
   std::vector<double> read_times(n_msgs), proc_times(n_msgs), latencies(n_msgs);
 
-  for (int i = 0; i < n_msgs; ++i) {
-
-    start_time = std::chrono::high_resolution_clock::now();
+  for (size_t i = 0; i < n_msgs; ++i) {
+    const auto start_time = std::chrono::high_resolution_clock::now();
 
     read_ret = s_handler.read_next_message();
-    read_done_time = std::chrono::high_resolution_clock::now();
+    const auto read_done_time = std::chrono::high_resolution_clock::now();
     book.process_order(read_ret.value());
-    completion_time = std::chrono::high_resolution_clock::now();
-    read_time = static_cast<double>(
+    const auto completion_time = std::chrono::high_resolution_clock::now();
+
+    const double read_time = static_cast<double>(
         duration_cast<std::chrono::nanoseconds>(read_done_time - start_time)
             .count());
-    proc_time = static_cast<double>(
+    const double proc_time = static_cast<double>(
         duration_cast<std::chrono::nanoseconds>(completion_time - read_done_time)
             .count());
-    latency = static_cast<double>(
+    const double latency = static_cast<double>(
         duration_cast<std::chrono::nanoseconds>(completion_time - start_time)
             .count());
     read_times[i] = read_time;
     proc_times[i] = proc_time;
     latencies[i] = latency;
 
-    BusyWait::busy_wait(10000);
+    BusyWait::busy_wait(1000);
   }
 
   // use current time as seed for random generator, generate random index
@@ -108,7 +104,7 @@ int main(int argc, char* argv[]) {
     std::ofstream csv("latencies_single_threaded.csv");
     csv << "read_time" << "," << "processing_time" << "," << "total_latency" << "\n";
     for(int i = 0; i < n_msgs; ++i) {
-      csv << read_times[i] << "," << proc_times[i] << "," << latencies[i] << "\n";
+      csv  << read_times[i] << "," << proc_times[i] << "," << latencies[i] << "\n";
     }
   }
 }

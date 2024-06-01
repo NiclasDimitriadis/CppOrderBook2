@@ -58,23 +58,14 @@ constexpr inline auto pack_index_v = nt_pack_index<i, vs...>::value;
 
 
 // determines whether all elements is a non-type parameter pack are of the same type
-template<auto... is>
-struct single_type_nt_pack{
-  static_assert(false);
-};
+template<auto...>
+struct single_type_nt_pack: std::false_type{};
 
-template<auto i1, auto i2, auto... is>
-struct single_type_nt_pack<i1,i2,is...>{
-  static constexpr bool value = std::is_same_v<decltype(i1), decltype(i2)> && single_type_nt_pack<i2, is...>::value;
-};
+template<typename T, T... vs>
+struct single_type_nt_pack<vs...>: std::true_type{};
 
-template<auto i>
-struct single_type_nt_pack<i>{
-  static constexpr bool value = true;
-};
-
-template<auto... Is>
-constexpr inline bool single_type_nt_pack_v = single_type_nt_pack<Is...>::value;
+template<auto... vs>
+constexpr inline bool single_type_nt_pack_v = single_type_nt_pack<vs...>::value;
 
 
 // deduces the type of a non-type parameter pack
@@ -144,9 +135,8 @@ private:
       using type = non_type_pack<T, pack_index_v<index, vals_...>>::template append_t<typename reverse_logic<index - 1, vals_...>::type>;
     };
 
-    template<size_t index, auto... vals_>
-    requires (sizeof...(vals_) == 0)
-    struct reverse_logic<index, vals_...>{
+    template<size_t index>
+    struct reverse_logic<index>{
       using type = non_type_pack<T>;
     };
 
@@ -182,29 +172,31 @@ private:
 
     template<template<auto...> class, auto...>
     struct monadic_bind_logic{
-      static_assert(false);
+      using type = non_type_pack<T>;
     };
 
-    template<template<T...> class Class_Template, T fst, T... tail>
+    template<template<auto...> class Class_Template, T fst, T... tail>
     requires helpers::specializes_class_template_tnt_v<non_type_pack, Class_Template<fst>>
     struct monadic_bind_logic<Class_Template, fst, tail...>{
       using type = Class_Template<fst>::template append_t<typename monadic_bind_logic<Class_Template, tail...>::type>;
     };
 
-    template<template<T...> class Class_Template, T last>
+    template<template<auto...> class Class_Template, T last>
     requires helpers::specializes_class_template_tnt_v<non_type_pack, Class_Template<last>>
     struct monadic_bind_logic<Class_Template, last>{
       using type = Class_Template<last>;
     };
 
-    template<template<T...> class Class_Template>
-    requires (sizeof...(vals) > 0)
+    template<template<auto...> class Class_Template>
     struct monadic_bind{
       using type = monadic_bind_logic<Class_Template, vals...>::type;
     };
 
+
+
     template<auto fold_by, T first, T second, T... tail>
     requires std::is_invocable_r_v<T,decltype(fold_by),T,T>
+    && (sizeof...(vals) > 0)
     struct fold_logic{
       static constexpr T value = fold_logic<fold_by, fold_by(first, second), tail...>::value;
     };
@@ -362,9 +354,14 @@ private:
     using type = type_pack_t<pack_index_t<0, Us...>>;
   };
 
+  template<size_t index>
+  struct reverse_logic<index>{
+    using type = type_pack_t<>;
+  };
+
   template<template<typename...> class, typename...>
   struct functor_map_logic{
-    static_assert(false);
+    using type = type_pack_t<>;
   };
 
   template<template<typename...> class Class_Template, typename Fst, typename... Tail>
@@ -378,14 +375,13 @@ private:
   };
 
   template<template<typename...> class Class_Template>
-  requires (sizeof...(Ts) > 0)
   struct functor_map{
     using type = functor_map_logic<Class_Template, Ts...>::type;
   };
 
   template<template<typename...> class, typename...>
   struct monadic_bind_logic{
-    static_assert(false);
+    using type = type_pack_t<>;
   };
 
   template<template<typename...> class Class_Template, typename Fst, typename... Tail>
@@ -401,13 +397,17 @@ private:
   };
 
   template<template<typename...> class Class_Template>
-  requires(sizeof...(Ts) > 0)
   struct monadic_bind{
     using type = monadic_bind_logic<Class_Template, Ts...>::type;
   };
 
-  template<size_t fst, size_t... tail>
+  template<size_t...>
   struct subset{
+    using type = type_pack_t<>;
+  };
+
+  template<size_t fst, size_t... tail>
+  struct subset<fst, tail...>{
     using type = type_pack_t<pack_index_t<fst,Ts...>>::template append_t<typename subset<tail...>::type>;
   };
 
@@ -419,13 +419,14 @@ private:
   template<size_t... is>
   using subset_t = subset<is...>::type;
 
-  template<typename>
+  template<typename...>
   struct subset_from_pack{
     static_assert(false);
   };
 
-  template<size_t... is>
-  struct subset_from_pack<non_type_pack_t<is...>>{
+  template<typename Uint, size_t... is>
+  requires std::unsigned_integral<Uint>
+  struct subset_from_pack<non_type_pack<Uint, is...>>{
     using type = subset_t<is...>;
   };
 
@@ -438,7 +439,7 @@ private:
   };
 
   template<size_t len, typename Uint, size_t... is>
-  requires (sizeof...(is) % len == 0) && (sizeof...(is) > len)
+  requires (sizeof...(is) > len) && (sizeof...(is) % len == 0)
   && std::unsigned_integral<Uint>
   struct split_logic<non_type_pack<Uint, is...>, len>{
   private:
@@ -450,39 +451,48 @@ private:
   };
 
   template<size_t len, typename Uint, size_t... is>
-  requires (sizeof...(is) == len)
-  && std::unsigned_integral<Uint>
+  requires (sizeof...(is) == len) && std::unsigned_integral<Uint>
   struct split_logic<non_type_pack<Uint, is...>, len>{
   private:
-    using subset_pack = non_type_pack_t<is...>;
+    using subset_pack = non_type_pack<Uint, is...>;
   public:
     using type = type_pack_t<subset_from_pack_t<subset_pack>>;
   };
 
+  template<template<typename...> class F, typename Init, typename...>
+  struct fold_logic{
+    using type = F<Init>;
+  };
+
   template<template<typename...> class F, typename First, typename Second, typename... Tail>
-    requires helpers::specializes_class_template_v<F, F<First, Second>>
-    struct fold_logic{
-      using type = fold_logic<F, F<First, Second>, Tail...>::type;
-    };
+  requires helpers::specializes_class_template_v<F, F<First, Second>>
+  struct fold_logic<F, First, Second, Tail...>{
+    using type = fold_logic<F, F<First, Second>, Tail...>::type;
+  };
 
-    template<template<typename...> class F, typename Second_To_Last, typename Last>
-    requires helpers::specializes_class_template_v<F, F<Second_To_Last, Last>>
-    struct fold_logic<F, Second_To_Last, Last>{
-      using type = F<Second_To_Last, Last>;
-    };
+  template<template<typename...> class F, typename Second_To_Last, typename Last>
+  requires helpers::specializes_class_template_v<F, F<Second_To_Last, Last>>
+  struct fold_logic<F, Second_To_Last, Last>{
+    using type = F<Second_To_Last, Last>;
+  };
 
-    template<template <typename...> class templ, size_t order>
-    requires (order > 0)
-    struct apply_templ_to_nr_combs{
-    private:
-    template<typename T>
-    using feed_template = T::template specialize_template_t<templ>;
+  template<template <typename...> class, size_t>
+  struct apply_templ_to_nr_combs{
+    using type = type_pack_t<>;
+  };
 
-    using combinations = generate_non_type_pack_t<non_rep_combinations::non_rep_index_combinations_t<sizeof...(Ts), order>>;
-    using split_up = type_pack_t<Ts...>::template split_logic<combinations, order>::type;
-    public:
-      using type = split_up::template functor_map_t<feed_template>;
-    };
+  template<template <typename...> class templ, size_t order>
+  requires (order > 0) && (sizeof...(Ts) > 0)
+  struct apply_templ_to_nr_combs<templ, order>{
+  private:
+  template<typename T>
+  using feed_template = T::template specialize_template_t<templ>;
+
+  using combinations = generate_non_type_pack_t<non_rep_combinations::non_rep_index_combinations_t<sizeof...(Ts), order>>;
+  using split_up = type_pack_t<Ts...>::template split_logic<combinations, order>::type;
+  public:
+    using type = split_up::template functor_map_t<feed_template>;
+  };
 
 public:
   static constexpr size_t size = sizeof...(Ts);
@@ -526,7 +536,7 @@ public:
   template<template <typename...> class Class_Template>
   using monadic_bind_t = monadic_bind<Class_Template>::type;
 
-  // generates as nested type pack of subsets of Ts... of length len from indices specified in a non type pack of type size_t
+  // generates a nested type pack of subsets of Ts... of length len from indices specified in a non type pack of type size_t
   template<typename NT_Pack, size_t len>
   using split_t = split_logic<NT_Pack, len>::type;
 
