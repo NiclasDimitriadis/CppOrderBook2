@@ -3,7 +3,7 @@
 
 <Message type="CPPOB_ALO" name"CPPOB_MsgAddLimitOrder">
 	<group name="SOF_Header" id="20100" blockLength=6 required="Y" description="implementation Single Open Framing Header" />
-		<field name="NMO_Message_Length" type="uint32" id="20011" required="Y" value=17 description="# of octets of msg including header and trailer" />
+		<field name="ALO_Message_Length" type="uint32" id="20011" required="Y" value=17 description="# of octets of msg including header and trailer" />
 		<field name="Encoding_Type" type="uint16" id="20002" required="Y" value="0xEB50" description="encodes SBE little endian"/>
 	</group>
 		<field name="CPPOB_OrderVolume" type="int32" id="20003" required="Y" description="int representation for order quantity" />
@@ -13,7 +13,6 @@
 	</group>
 </Message>
 
-
 <Message type="CPPOB_WLO" name"CPPOB_MsgWithdrawLimitOrder">
 	<group name="SOF_Header" id="20100" blockLength=6 required="Y" description="implementation Single Open Framing Header">
 		<field name="WLO_Message_Length" type="uint32" id="20012" required="Y" value=18 description="# of octets of msg including header and trailer" />
@@ -21,7 +20,7 @@
 	</group>
 		<field name="CPPOB_OrderVolume" type="int32" id="20003" required="Y" description="int representation for order quantity" />
 		<field name="CPPOB_OrderPrice" type="uint32" id="20004" required="Y" null_value="0xFFFFFFFF" description="int representation for order price" />
-		<field name="CPPOB_PaddingByte" type="uint8" id="20005" required="Y" value="0xFF" description="padding byte to distinguish message types with identical fields solely via message length" />
+		<field name="CPPOB_PaddingByte" type="uint8" id="20005" required="Y" value="0xFF" description="padding byte to distinguish message types with identical fields or otherwise equal length solely via message length" />
 	<group name="Trailer_Checksum" id="20101" blockLength=3 required="Y">
 		<field name="CheckSum" type="String" id=10 length=3 required="Y" />
 	</group>
@@ -35,6 +34,45 @@
 	</group>
 		<field name="CPPOB_OrderVolume" type="int32" id="20003" required="Y" description="int representation for order quantity" />
 	<group name="Trailer_Checksum" id="20101" blockLength=3 required="Y"> 
+		<field name="CheckSum" type="String" id=10 length=3 required="Y" />
+	</group>
+</Message>
+
+<Message type="CPPOB_ALO_ID" name"CPPOB_MsgAddLimitOrder_ID">
+	<group name="SOF_Header" id="20100" blockLength=6 required="Y" description="implementation Single Open Framing Header" />
+		<field name="ALO_ID_Message_Length" type="uint32" id="20014" required="Y" value=25 description="# of octets of msg including header and trailer" />
+		<field name="Encoding_Type" type="uint16" id="20002" required="Y" value="0xEB50" description="encodes SBE little endian"/>
+	</group>
+		<field name="CPPOB_MsgID" type="uint64" id="20006" required="Y" description="64 bit uint identifying specific message, may also encode identification of counterparty" />
+		<field name="CPPOB_OrderVolume" type="int32" id="20003" required="Y" description="int representation for order quantity" />
+		<field name="CPPOB_OrderPrice" type="uint32" id="20004" required="Y" null_value="0xFFFFFFFF" description="int representation for order price" />
+	<group name="Trailer_Checksum" id="20101" blockLength=3 required="Y">
+		<field name="CheckSum" type="String" id=10 length=3 required="Y">
+	</group>
+</Message>
+
+<Message type="CPPOB_WLO_ID" name"CPPOB_MsgWithdrawLimitOrder_ID">
+	<group name="SOF_Header" id="20100" blockLength=6 required="Y" description="implementation Single Open Framing Header">
+		<field name="WLO_ID_Message_Length" type="uint32" id="20015" required="Y" value=33 description="# of octets of msg including header and trailer" />
+		<field name="Encoding_Type" type="uint16" id="20002" required="Y" value="0xEB50" description="encodes SBE little endian" />
+	</group>
+		<field name="CPPOB_MsgID" type="uint64" id="20006" required="Y" description="64 bit uint identifying specific message, may also encode identification of counterparty" />
+		<field name="CPPOB_MsgID" type="uint64" id="20006" required="Y" description="64 bit uint identifying specific message, may also encode identification of counterparty" />
+		<field name="CPPOB_OrderVolume" type="int32" id="20003" required="Y" description="int representation for order quantity" />
+		<field name="CPPOB_OrderPrice" type="uint32" id="20004" required="Y" null_value="0xFFFFFFFF" description="int representation for order price" />
+	<group name="Trailer_Checksum" id="20101" blockLength=3 required="Y">
+		<field name="CheckSum" type="String" id=10 length=3 required="Y" />
+	</group>
+</Message>
+
+<Message type="CPPOB_MO_ID" name"CPPOB_MsgMarketOrder_ID">
+	<group name="SOF_Header" id="20100" blockLength=6 required="Y" description="implementation Single Open Framing Header">
+		<field name="MO_ID_Message_Length" type="uint32" id="20016" required="Y" value=21 description="# of octets of msg including header and trailer" />
+		<field name="Encoding_Type" type="uint16" id="20002" required="Y" value="0xEB50" description="encodes SBE little endian" />
+	</group>
+		<field name="CPPOB_MsgID" type="uint64" id="20006" required="Y" description="64 bit uint identifying specific message, may also encode identification of counterparty" />
+		<field name="CPPOB_OrderVolume" type="int32" id="20003" required="Y" description="int representation for order quantity" />
+	<group name="Trailer_Checksum" id="20101" blockLength=3 required="Y">
 		<field name="CheckSum" type="String" id=10 length=3 required="Y" />
 	</group>
 </Message>

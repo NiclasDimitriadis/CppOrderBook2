@@ -1,4 +1,4 @@
-CXX = g++-13
+CXX = g++-14
 COMPILER_FLAGS = -std=c++23 -O3 -ggdb
 INCLUDE_DIRS = -I ../../src/production -I ../../src/testing\
 	 -I ../../dependencies/TMP_lib/src/production -I ../../dependencies/SeqLockQueue/src/production
